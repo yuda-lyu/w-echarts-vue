@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>components/WEchartsVue.vue - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-WEchartsVue.html">WEchartsVue</a><ul class='methods'><li data-type='method'><a href="module-WEchartsVue.html#bindResize">bindResize</a></li><li data-type='method'><a href="module-WEchartsVue.html#clear">clear</a></li><li data-type='method'><a href="module-WEchartsVue.html#clearResize">clearResize</a></li><li data-type='method'><a href="module-WEchartsVue.html#getChart">getChart</a></li><li data-type='method'><a href="module-WEchartsVue.html#init">init</a></li><li data-type='method'><a href="module-WEchartsVue.html#reinit">reinit</a></li><li data-type='method'><a href="module-WEchartsVue.html#updateLoading">updateLoading</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#iniEcharts">iniEcharts</a></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">components/WEchartsVue.vue</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>&lt;template>
+    &lt;!-- ref=$self為供外部存取繪圖容器之用; 寬高由外部以style給予 -->
+    &lt;div ref="$self" class="w-echarts-vue">&lt;/div>
+&lt;/template>
+
+&lt;script>
+import { throttle } from 'echarts/core'
+import iniEcharts from '../js/iniEcharts.mjs'
+
+
+//echarts, 直接引用echarts與echarts-gl不使用cdn
+//注意: 本組件直接以echarts原生API實作生命週期(init, setOption, resize, dispose)與事件轉發,
+//不使用vue-echarts, 因其runtime依賴vue-demi, 而vue-demi出廠為Vue3模式須靠postinstall切換,
+//npm>=12/pnpm>=10/bun預設封鎖依賴套件install scripts, 下游以src方式引用本套件時會靜默停在Vue3模式而壞掉;
+//直接實作後全依賴樹零install script, 下游任意套件管理器與打包器皆零設定可用
+let echarts = iniEcharts()
+
+
+/**
+ * echarts繪圖組件, 已內含echarts全量圖表與組件, 以及echarts-gl之3D圖表(bar3D, line3D, scatter3D, surface等), 不須自cdn額外引用
+ *
+ * 注意: 組件本身不帶預設高度, 須由外部給予寬高(例如style="width:620px; height:300px;"), 否則因高度為0而看不見圖形
+ *
+ * @vue-prop {Object} [options={}] 輸入echarts設定物件，即echarts之option，預設{}。變更時自動重繪：給予新物件(參照改變)採整體置換(notMerge)，原物件內變更(mutation)採合併更新，與vue-echarts語意一致
+ * @vue-prop {String|Object} [theme=''] 輸入echarts主題字串或主題設定物件，字串為已使用echarts.registerTheme註冊之主題名稱，變更時會自動銷毀重建圖表，預設''
+ * @vue-prop {Object} [initOptions={}] 輸入echarts初始化設定物件，即echarts.init之opts，可設定renderer('canvas'或'svg')、locale、devicePixelRatio等，變更時會自動銷毀重建圖表，預設{}
+ * @vue-prop {Object} [updateOptions={}] 輸入echarts更新設定物件，即echarts之setOption之opts，可設定notMerge、replaceMerge、lazyUpdate等，預設{}
+ * @vue-prop {String} [group=''] 輸入圖表群組名稱字串，供echarts.connect跨圖表連動使用，預設''
+ * @vue-prop {Boolean} [manualUpdate=false] 輸入是否關閉options之深度監聽布林值，若為true則變更options不會自動重繪，須自行取得實例呼叫setOption更新，適用於資料量龐大時，預設false
+ * @vue-prop {Boolean} [loading=false] 輸入是否顯示讀取中動畫布林值，預設false
+ * @vue-prop {Object} [loadingOptions={}] 輸入讀取中動畫設定物件，即echarts之showLoading之opts，可設定text、color、maskColor等，預設{}
+ * @vue-prop {Boolean|Object} [autoresize=true] 輸入是否於容器尺寸改變時自動重繪布林值，亦可給物件設定{throttle,onResize}，throttle為節流毫秒數預設100，預設true
+ * @vue-event {Object} * 對外轉發echarts之全部事件，例如click、mouseover、legendselectchanged、datazoom、finished等，回傳事件參數物件；zrender事件以zr:前綴綁定，例如@zr:click
+ */
+export default {
+    props: {
+        options: {
+            type: Object,
+            default: () => {},
+        },
+        theme: {
+            type: [String, Object],
+            default: () => '',
+        },
+        initOptions: {
+            type: Object,
+            default: () => {},
+        },
+        updateOptions: {
+            type: Object,
+            default: () => {},
+        },
+        group: {
+            type: String,
+            default: () => '',
+        },
+        manualUpdate: {
+            type: Boolean,
+            default: () => false,
+        },
+        loading: {
+            type: Boolean,
+            default: () => false,
+        },
+        loadingOptions: {
+            type: Object,
+            default: () => {},
+        },
+        autoresize: {
+            type: [Boolean, Object],
+            default: () => true,
+        },
+    },
+    data: function() {
+        //chart與resizeObserver為echarts實例與瀏覽器原生物件, 不可放入data,
+        //否則Vue會對其深層響應化(遞迴defineProperty), 造成效能問題, 故於init時直接掛this成非響應式屬性
+        return {
+        }
+    },
+    mounted: function() {
+        //console.log('mounted')
+
+        let vo = this
+
+        //init
+        vo.init()
+
+    },
+    beforeDestroy: function() {
+        //console.log('beforeDestroy')
+
+        let vo = this
+
+        //clear
+        vo.clear()
+
+    },
+    watch: {
+
+        options: {
+            deep: true,
+            handler: function(nv, ov) {
+                let vo = this
+
+                //manualUpdate, 關閉自動重繪
+                if (vo.manualUpdate) {
+                    return
+                }
+
+                //check
+                if (!vo.chart) {
+                    return
+                }
+
+                //setOption, 參照改變(給予新物件)採整體置換, 原物件內變更採合併更新, 與vue-echarts語意一致
+                vo.chart.setOption(nv || {}, { notMerge: nv !== ov, ...vo.updateOptions })
+
+            },
+        },
+
+        theme: function() {
+            this.reinit()
+        },
+
+        initOptions: {
+            deep: true,
+            handler: function() {
+                this.reinit()
+            },
+        },
+
+        group: function(nv) {
+            let vo = this
+            if (vo.chart) {
+                vo.chart.group = nv || ''
+            }
+        },
+
+        loading: function() {
+            this.updateLoading()
+        },
+
+        loadingOptions: {
+            deep: true,
+            handler: function() {
+                this.updateLoading()
+            },
+        },
+
+        autoresize: function() {
+            let vo = this
+            vo.clearResize()
+            vo.bindResize()
+        },
+
+    },
+    computed: {
+    },
+    methods: {
+
+        /**
+         * 初始化圖表, 建立echarts實例並綁定事件, 讀取中動畫與尺寸監聽(內部使用)
+         */
+        init: function() {
+            let vo = this
+
+            //el
+            let el = vo.$refs['$self']
+            if (!el) {
+                return
+            }
+
+            //init
+            let chart = echarts.init(el, vo.theme || null, vo.initOptions || {})
+
+            //chart, 掛this成非響應式屬性
+            vo.chart = chart
+
+            //group
+            if (vo.group) {
+                chart.group = vo.group
+            }
+
+            //setOption
+            chart.setOption(vo.options || {}, vo.updateOptions || {})
+
+            //事件轉發, 由$listeners綁定echarts事件, zr:前綴綁定zrender事件
+            Object.keys(vo.$listeners || {}).forEach((key) => {
+
+                //k, 剝除Vue事件修飾前綴(~為once, &amp;為passive, !為capture)
+                let k = key.replace(/^[~!&amp;]+/, '')
+
+                //fn
+                let fn = vo.$listeners[key]
+
+                //on
+                if (k.indexOf('zr:') === 0) {
+                    chart.getZr().on(k.slice(3), fn)
+                }
+                else {
+                    chart.on(k, fn)
+                }
+
+            })
+
+            //updateLoading
+            vo.updateLoading()
+
+            //bindResize
+            vo.bindResize()
+
+        },
+
+        /**
+         * 銷毀並重建圖表, 供theme或initOptions變更時使用(內部使用)
+         */
+        reinit: function() {
+            let vo = this
+
+            //clear
+            vo.clear()
+
+            //init
+            vo.init()
+
+        },
+
+        /**
+         * 更新讀取中動畫(內部使用)
+         */
+        updateLoading: function() {
+            let vo = this
+
+            //check
+            if (!vo.chart) {
+                return
+            }
+
+            //showLoading, hideLoading
+            if (vo.loading) {
+                vo.chart.showLoading('default', vo.loadingOptions || {})
+            }
+            else {
+                vo.chart.hideLoading()
+            }
+
+        },
+
+        /**
+         * 綁定容器尺寸監聽, 尺寸改變時自動重繪(內部使用)
+         */
+        bindResize: function() {
+            let vo = this
+
+            //check
+            if (!vo.autoresize || !vo.chart) {
+                return
+            }
+
+            //el
+            let el = vo.$refs['$self']
+            if (!el) {
+                return
+            }
+
+            //wait, onResize
+            let opt = (vo.autoresize === true) ? {} : vo.autoresize
+            let wait = Number.isFinite(opt.throttle) ? opt.throttle : 100
+            let onResize = opt.onResize
+
+            //callback, 重繪並通知外部
+            let callback = () => {
+                if (!vo.chart) {
+                    return
+                }
+                vo.chart.resize()
+                if (typeof onResize === 'function') {
+                    onResize()
+                }
+            }
+            if (wait > 0) {
+                callback = throttle(callback, wait)
+            }
+
+            //resizeObserver, 掛this成非響應式屬性, 首次observe必觸發一次callback故跳過
+            let bFirst = true
+            vo.resizeObserver = new ResizeObserver(() => {
+                if (bFirst) {
+                    bFirst = false
+                    return
+                }
+                callback()
+            })
+            vo.resizeObserver.observe(el)
+
+        },
+
+        /**
+         * 解除容器尺寸監聽(內部使用)
+         */
+        clearResize: function() {
+            let vo = this
+
+            //disconnect
+            if (vo.resizeObserver) {
+                vo.resizeObserver.disconnect()
+                vo.resizeObserver = null
+            }
+
+        },
+
+        /**
+         * 銷毀圖表與監聽(內部使用)
+         */
+        clear: function() {
+            let vo = this
+
+            //clearResize
+            vo.clearResize()
+
+            //dispose
+            if (vo.chart) {
+                vo.chart.dispose()
+                vo.chart = null
+            }
+
+        },
+
+        /**
+         * 取得內部echarts實例, 供外部呼叫echarts原生方法(setOption, resize, getDataURL, dispatchAction等)之用
+         * 因echarts實例於組件掛載後才建立, 故初始化前呼叫會回傳null
+         *
+         * @returns {Object|null} 回傳echarts實例物件, 若尚未初始化則回傳null
+         */
+        getChart: function() {
+            let vo = this
+            return vo.chart || null
+        },
+
+    },
+}
+&lt;/script>
+
+&lt;style scoped>
+.w-echarts-vue {
+    display: block;
+}
+&lt;/style>
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.5</a> on Wed Aug 19 2026 22:33:39 GMT+0800 (台北標準時間) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+
+
+</body>
+</html>

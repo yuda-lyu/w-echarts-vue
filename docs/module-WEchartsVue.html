@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>WEchartsVue - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-WEchartsVue.html">WEchartsVue</a><ul class='methods'><li data-type='method'><a href="module-WEchartsVue.html#bindResize">bindResize</a></li><li data-type='method'><a href="module-WEchartsVue.html#clear">clear</a></li><li data-type='method'><a href="module-WEchartsVue.html#clearResize">clearResize</a></li><li data-type='method'><a href="module-WEchartsVue.html#getChart">getChart</a></li><li data-type='method'><a href="module-WEchartsVue.html#init">init</a></li><li data-type='method'><a href="module-WEchartsVue.html#reinit">reinit</a></li><li data-type='method'><a href="module-WEchartsVue.html#updateLoading">updateLoading</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#iniEcharts">iniEcharts</a></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">WEchartsVue</h1>
+    
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        
+            
+        
+    
+</header>
+
+<article>
+    
+        <div class="container-overview">
+        
+            
+                <div class="description usertext"><p>echarts繪圖組件, 已內含echarts全量圖表與組件, 以及echarts-gl之3D圖表(bar3D, line3D, scatter3D, surface等), 不須自cdn額外引用</p>
+<p>注意: 組件本身不帶預設高度, 須由外部給予寬高(例如style=&quot;width:620px; height:300px;&quot;), 否則因高度為0而看不見圖形</p></p></div></div> 
+
+
+<h3 class="subsection-title" style="margin-top: 1em" data-jsdoc-vuejs="section-props">Props</h3>
+<table data-jsdoc-vuejs="table-props">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Default value</th>
+        <th>Required?</th>
+        <th>Description</th>
+    </tr>
+    </thead>
+    <tbody><tr>
+        <td><code>options</code></td>
+        <td>Object</td>
+        <td><code>{}</code></td>
+        <td>No</td>
+        <td>輸入echarts設定物件，即echarts之option，預設{}。變更時自動重繪：給予新物件(參照改變)採整體置換(notMerge)，原物件內變更(mutation)採合併更新，與vue-echarts語意一致</td>
+    </tr><tr>
+        <td><code>theme</code></td>
+        <td>String|Object</td>
+        <td><code>''</code></td>
+        <td>No</td>
+        <td>輸入echarts主題字串或主題設定物件，字串為已使用echarts.registerTheme註冊之主題名稱，變更時會自動銷毀重建圖表，預設''</td>
+    </tr><tr>
+        <td><code>initOptions</code></td>
+        <td>Object</td>
+        <td><code>{}</code></td>
+        <td>No</td>
+        <td>輸入echarts初始化設定物件，即echarts.init之opts，可設定renderer('canvas'或'svg')、locale、devicePixelRatio等，變更時會自動銷毀重建圖表，預設{}</td>
+    </tr><tr>
+        <td><code>updateOptions</code></td>
+        <td>Object</td>
+        <td><code>{}</code></td>
+        <td>No</td>
+        <td>輸入echarts更新設定物件，即echarts之setOption之opts，可設定notMerge、replaceMerge、lazyUpdate等，預設{}</td>
+    </tr><tr>
+        <td><code>group</code></td>
+        <td>String</td>
+        <td><code>''</code></td>
+        <td>No</td>
+        <td>輸入圖表群組名稱字串，供echarts.connect跨圖表連動使用，預設''</td>
+    </tr><tr>
+        <td><code>manualUpdate</code></td>
+        <td>Boolean</td>
+        <td><code>false</code></td>
+        <td>No</td>
+        <td>輸入是否關閉options之深度監聽布林值，若為true則變更options不會自動重繪，須自行取得實例呼叫setOption更新，適用於資料量龐大時，預設false</td>
+    </tr><tr>
+        <td><code>loading</code></td>
+        <td>Boolean</td>
+        <td><code>false</code></td>
+        <td>No</td>
+        <td>輸入是否顯示讀取中動畫布林值，預設false</td>
+    </tr><tr>
+        <td><code>loadingOptions</code></td>
+        <td>Object</td>
+        <td><code>{}</code></td>
+        <td>No</td>
+        <td>輸入讀取中動畫設定物件，即echarts之showLoading之opts，可設定text、color、maskColor等，預設{}</td>
+    </tr><tr>
+        <td><code>autoresize</code></td>
+        <td>Boolean|Object</td>
+        <td><code>true</code></td>
+        <td>No</td>
+        <td>輸入是否於容器尺寸改變時自動重繪布林值，亦可給物件設定{throttle,onResize}，throttle為節流毫秒數預設100，預設true</td>
+    </tr></tbody>
+</table>
+
+
+
+
+
+
+
+
+<h3 class="subsection-title" style="margin-top: 1em" data-jsdoc-vuejs="section-event">Events</h3>
+<table data-jsdoc-vuejs="table-event">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Payload Type</th>
+        <th>Description</th>
+    </tr>
+    </thead>
+    <tbody><tr>
+        <td><code>*</code></td>
+        <td>Object</td>
+        <td>對外轉發echarts之全部事件，例如click、mouseover、legendselectchanged、datazoom、finished等，回傳事件參數物件；zrender事件以zr:前綴綁定，例如@zr:click</td>
+    </tr></tbody>
+</table>
+
+
+<div class="container-overview"><div><p> 
+</div>
+            
+
+            
+                
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>echarts繪圖組件, 已內含echarts全量圖表與組件, 以及echarts-gl之3D圖表(bar3D, line3D, scatter3D, surface等), 不須自cdn額外引用</p>
+<p>注意: 組件本身不帶預設高度, 須由外部給予寬高(例如style=&quot;width:620px; height:300px;&quot;), 否則因高度為0而看不見圖形</p></p></div></div> 
+
+
+<h3 class="subsection-title" style="margin-top: 1em" data-jsdoc-vuejs="section-props">Props</h3>
+<table data-jsdoc-vuejs="table-props">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Default value</th>
+        <th>Required?</th>
+        <th>Description</th>
+    </tr>
+    </thead>
+    <tbody><tr>
+        <td><code>options</code></td>
+        <td>Object</td>
+        <td><code>{}</code></td>
+        <td>No</td>
+        <td>輸入echarts設定物件，即echarts之option，預設{}。變更時自動重繪：給予新物件(參照改變)採整體置換(notMerge)，原物件內變更(mutation)採合併更新，與vue-echarts語意一致</td>
+    </tr><tr>
+        <td><code>theme</code></td>
+        <td>String|Object</td>
+        <td><code>''</code></td>
+        <td>No</td>
+        <td>輸入echarts主題字串或主題設定物件，字串為已使用echarts.registerTheme註冊之主題名稱，變更時會自動銷毀重建圖表，預設''</td>
+    </tr><tr>
+        <td><code>initOptions</code></td>
+        <td>Object</td>
+        <td><code>{}</code></td>
+        <td>No</td>
+        <td>輸入echarts初始化設定物件，即echarts.init之opts，可設定renderer('canvas'或'svg')、locale、devicePixelRatio等，變更時會自動銷毀重建圖表，預設{}</td>
+    </tr><tr>
+        <td><code>updateOptions</code></td>
+        <td>Object</td>
+        <td><code>{}</code></td>
+        <td>No</td>
+        <td>輸入echarts更新設定物件，即echarts之setOption之opts，可設定notMerge、replaceMerge、lazyUpdate等，預設{}</td>
+    </tr><tr>
+        <td><code>group</code></td>
+        <td>String</td>
+        <td><code>''</code></td>
+        <td>No</td>
+        <td>輸入圖表群組名稱字串，供echarts.connect跨圖表連動使用，預設''</td>
+    </tr><tr>
+        <td><code>manualUpdate</code></td>
+        <td>Boolean</td>
+        <td><code>false</code></td>
+        <td>No</td>
+        <td>輸入是否關閉options之深度監聽布林值，若為true則變更options不會自動重繪，須自行取得實例呼叫setOption更新，適用於資料量龐大時，預設false</td>
+    </tr><tr>
+        <td><code>loading</code></td>
+        <td>Boolean</td>
+        <td><code>false</code></td>
+        <td>No</td>
+        <td>輸入是否顯示讀取中動畫布林值，預設false</td>
+    </tr><tr>
+        <td><code>loadingOptions</code></td>
+        <td>Object</td>
+        <td><code>{}</code></td>
+        <td>No</td>
+        <td>輸入讀取中動畫設定物件，即echarts之showLoading之opts，可設定text、color、maskColor等，預設{}</td>
+    </tr><tr>
+        <td><code>autoresize</code></td>
+        <td>Boolean|Object</td>
+        <td><code>true</code></td>
+        <td>No</td>
+        <td>輸入是否於容器尺寸改變時自動重繪布林值，亦可給物件設定{throttle,onResize}，throttle為節流毫秒數預設100，預設true</td>
+    </tr></tbody>
+</table>
+
+
+
+
+
+
+
+
+<h3 class="subsection-title" style="margin-top: 1em" data-jsdoc-vuejs="section-event">Events</h3>
+<table data-jsdoc-vuejs="table-event">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Payload Type</th>
+        <th>Description</th>
+    </tr>
+    </thead>
+    <tbody><tr>
+        <td><code>*</code></td>
+        <td>Object</td>
+        <td>對外轉發echarts之全部事件，例如click、mouseover、legendselectchanged、datazoom、finished等，回傳事件參數物件；zrender事件以zr:前綴綁定，例如@zr:click</td>
+    </tr></tbody>
+</table>
+
+
+<div class="container-overview"><div><p> 
+</li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            
+        
+        </div>
+    
+
+    
+
+    
+
+    
+    
+    
+
+     
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    <h4 class="name" id="bindResize"><span class="type-signature"></span>bindResize<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>綁定容器尺寸監聽, 尺寸改變時自動重繪(內部使用)</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="components_WEchartsVue.vue.html">components/WEchartsVue.vue</a>, <a href="components_WEchartsVue.vue.html#line252">line 252</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="clear"><span class="type-signature"></span>clear<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>銷毀圖表與監聽(內部使用)</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="components_WEchartsVue.vue.html">components/WEchartsVue.vue</a>, <a href="components_WEchartsVue.vue.html#line315">line 315</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="clearResize"><span class="type-signature"></span>clearResize<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>解除容器尺寸監聽(內部使用)</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="components_WEchartsVue.vue.html">components/WEchartsVue.vue</a>, <a href="components_WEchartsVue.vue.html#line301">line 301</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="getChart"><span class="type-signature"></span>getChart<span class="signature">()</span><span class="type-signature"> &rarr; {Object|null}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>取得內部echarts實例, 供外部呼叫echarts原生方法(setOption, resize, getDataURL, dispatchAction等)之用
+因echarts實例於組件掛載後才建立, 故初始化前呼叫會回傳null</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="components_WEchartsVue.vue.html">components/WEchartsVue.vue</a>, <a href="components_WEchartsVue.vue.html#line335">line 335</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>回傳echarts實例物件, 若尚未初始化則回傳null</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Object</span>
+|
+
+<span class="param-type">null</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="init"><span class="type-signature"></span>init<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>初始化圖表, 建立echarts實例並綁定事件, 讀取中動畫與尺寸監聽(內部使用)</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="components_WEchartsVue.vue.html">components/WEchartsVue.vue</a>, <a href="components_WEchartsVue.vue.html#line164">line 164</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="reinit"><span class="type-signature"></span>reinit<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>銷毀並重建圖表, 供theme或initOptions變更時使用(內部使用)</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="components_WEchartsVue.vue.html">components/WEchartsVue.vue</a>, <a href="components_WEchartsVue.vue.html#line217">line 217</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="updateLoading"><span class="type-signature"></span>updateLoading<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>更新讀取中動畫(內部使用)</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="components_WEchartsVue.vue.html">components/WEchartsVue.vue</a>, <a href="components_WEchartsVue.vue.html#line231">line 231</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.5</a> on Wed Aug 19 2026 22:33:39 GMT+0800 (台北標準時間) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+
+
+</body>
+</html>
