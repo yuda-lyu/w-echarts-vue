@@ -1,11 +1,11 @@
 {
   "name": "w-echarts-vue",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "dist/w-echarts-vue.umd.js",
   "dependencies": {
     "echarts": "^6.1.0",
     "echarts-gl": "^2.1.0",
-    "wsemi": "^1.8.77"
+    "wsemi": "^1.8.78"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^5.0.8",
@@ -19,7 +19,7 @@
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-vue": "^9.10.0",
     "vue": "^2.7.16",
-    "w-component-vue": "^2.4.87",
+    "w-component-vue": "^2.5.1",
     "w-package-tools": "^1.1.14"
   },
   "scripts": {
