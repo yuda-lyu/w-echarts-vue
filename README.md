@@ -70,7 +70,7 @@ Add script for vue.
 
 Add script for w-echarts-vue.
 ```alias
-<script src="https://cdn.jsdelivr.net/npm/w-echarts-vue@1.0.1/dist/w-echarts-vue.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/w-echarts-vue@1.0.2/dist/w-echarts-vue.umd.js"></script>
 ```
 
 Directly use:
