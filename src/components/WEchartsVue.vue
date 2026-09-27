@@ -1,11 +1,14 @@
 <template>
     <!-- ref=$self為供外部存取繪圖容器之用; 寬高由外部以style給予 -->
-    <div ref="$self" class="w-echarts-vue"></div>
+    <div ref="$self" class="w-echarts-vue" v-domresize="resizeOpt" @domresize="onDomResize"></div>
 </template>
 
 <script>
-import { throttle } from 'echarts/core'
+import domResize from 'w-component-vue/src/js/domResize.mjs'
 import iniEcharts from '../js/iniEcharts.mjs'
+import parseAutoresize from '../js/parseAutoresize.mjs'
+import isPropUnchanged from '../js/isPropUnchanged.mjs'
+import getContainerSize from '../js/getContainerSize.mjs'
 
 
 //echarts, 直接引用echarts與echarts-gl不使用cdn
@@ -22,17 +25,20 @@ let echarts = iniEcharts()
  * 注意: 組件本身不帶預設高度, 須由外部給予寬高(例如style="width:620px; height:300px;"), 否則因高度為0而看不見圖形
  *
  * @vue-prop {Object} [options={}] 輸入echarts設定物件，即echarts之option，預設{}。變更時自動重繪：給予新物件(參照改變)採整體置換(notMerge)，原物件內變更(mutation)採合併更新，與vue-echarts語意一致
- * @vue-prop {String|Object} [theme=''] 輸入echarts主題字串或主題設定物件，字串為已使用echarts.registerTheme註冊之主題名稱，變更時會自動銷毀重建圖表，預設''
- * @vue-prop {Object} [initOptions={}] 輸入echarts初始化設定物件，即echarts.init之opts，可設定renderer('canvas'或'svg')、locale、devicePixelRatio等，變更時會自動銷毀重建圖表，預設{}
+ * @vue-prop {String|Object} [theme=''] 輸入echarts主題字串或主題設定物件，字串為已使用echarts.registerTheme註冊之主題名稱，變更時會自動銷毀重建圖表，內容相同之新物件(例如模板物件字面值於每次重繪產生者)不視為變更，預設''
+ * @vue-prop {Object} [initOptions={}] 輸入echarts初始化設定物件，即echarts.init之opts，可設定renderer('canvas'或'svg')、locale、devicePixelRatio等，變更時會自動銷毀重建圖表，內容相同之新物件不視為變更，預設{}
  * @vue-prop {Object} [updateOptions={}] 輸入echarts更新設定物件，即echarts之setOption之opts，可設定notMerge、replaceMerge、lazyUpdate等，預設{}
  * @vue-prop {String} [group=''] 輸入圖表群組名稱字串，供echarts.connect跨圖表連動使用，預設''
  * @vue-prop {Boolean} [manualUpdate=false] 輸入是否關閉options之深度監聽布林值，若為true則變更options不會自動重繪，須自行取得實例呼叫setOption更新，適用於資料量龐大時，預設false
  * @vue-prop {Boolean} [loading=false] 輸入是否顯示讀取中動畫布林值，預設false
- * @vue-prop {Object} [loadingOptions={}] 輸入讀取中動畫設定物件，即echarts之showLoading之opts，可設定text、color、maskColor等，預設{}
- * @vue-prop {Boolean|Object} [autoresize=true] 輸入是否於容器尺寸改變時自動重繪布林值，亦可給物件設定{throttle,onResize}，throttle為節流毫秒數預設100，預設true
+ * @vue-prop {Object} [loadingOptions={}] 輸入讀取中動畫設定物件，即echarts之showLoading之opts，可設定text、color、maskColor等，內容相同之新物件不視為變更，預設{}
+ * @vue-prop {Boolean|Object} [autoresize=true] 輸入是否於容器尺寸改變時自動重繪布林值，亦可給物件設定{throttle,onResize}，throttle為節流毫秒數(取整，0為不節流)預設100，onResize為圖表依新尺寸重繪後之通知函數(呼叫時已完成繪製，可直接讀取新版面)，容器尺寸與圖表一致或容器隱藏(寬或高為0)時不重繪亦不通知，僅啟用狀態或throttle改變時才重新綁定監聽，預設true
  * @vue-event {Object} * 對外轉發echarts之全部事件，例如click、mouseover、legendselectchanged、datazoom、finished等，回傳事件參數物件；zrender事件以zr:前綴綁定，例如@zr:click
  */
 export default {
+    directives: {
+        domresize: domResize(),
+    },
     props: {
         options: {
             type: Object,
@@ -72,9 +78,10 @@ export default {
         },
     },
     data: function() {
-        //chart與resizeObserver為echarts實例與瀏覽器原生物件, 不可放入data,
-        //否則Vue會對其深層響應化(遞迴defineProperty), 造成效能問題, 故於init時直接掛this成非響應式屬性
+        //chart為echarts實例, 不可放入data, 否則Vue會對其深層響應化(遞迴defineProperty), 造成效能問題, 故於init時直接掛this成非響應式屬性
+        //resizeOpt為v-domresize之設定, 僅於autoresize之啟用狀態或throttle改變時更換
         return {
+            resizeOpt: this.genResizeOpt(this.autoresize),
         }
     },
     mounted: function() {
@@ -118,13 +125,21 @@ export default {
             },
         },
 
-        theme: function() {
+        theme: function(nv, ov) {
+            //模板物件字面值每次重繪皆為新物件, 內容相同時不重建
+            if (isPropUnchanged(nv, ov)) {
+                return
+            }
             this.reinit()
         },
 
         initOptions: {
             deep: true,
-            handler: function() {
+            handler: function(nv, ov) {
+                //模板物件字面值每次重繪皆為新物件, 內容相同時不重建
+                if (isPropUnchanged(nv, ov)) {
+                    return
+                }
                 this.reinit()
             },
         },
@@ -142,15 +157,26 @@ export default {
 
         loadingOptions: {
             deep: true,
-            handler: function() {
+            handler: function(nv, ov) {
+                //模板物件字面值每次重繪皆為新物件, 內容相同時不重新顯示
+                if (isPropUnchanged(nv, ov)) {
+                    return
+                }
                 this.updateLoading()
             },
         },
 
-        autoresize: function() {
+        autoresize: function(nv, ov) {
             let vo = this
-            vo.clearResize()
-            vo.bindResize()
+
+            //僅於啟用狀態或節流毫秒數改變時更換設定(v-domresize隨之重建偵測器); onResize於觸發時才讀取, 故模板物件字面值(每次重繪皆為新物件)或更換onResize皆不需更換
+            let arNew = parseAutoresize(nv)
+            let arOld = parseAutoresize(ov)
+            if (arNew.enabled === arOld.enabled && arNew.throttle === arOld.throttle) {
+                return
+            }
+
+            vo.resizeOpt = vo.genResizeOpt(nv)
         },
 
     },
@@ -159,7 +185,7 @@ export default {
     methods: {
 
         /**
-         * 初始化圖表, 建立echarts實例並綁定事件, 讀取中動畫與尺寸監聽(內部使用)
+         * 初始化圖表, 建立echarts實例並綁定事件與讀取中動畫(內部使用)
          */
         init: function() {
             let vo = this
@@ -206,9 +232,6 @@ export default {
             //updateLoading
             vo.updateLoading()
 
-            //bindResize
-            vo.bindResize()
-
         },
 
         /**
@@ -247,76 +270,84 @@ export default {
         },
 
         /**
-         * 綁定容器尺寸監聽, 尺寸改變時自動重繪(內部使用)
+         * 產生v-domresize之設定, autoresize停用時為false(不建立偵測器)(內部使用)
+         *
+         * 以w-component-vue之v-domresize(wsemi domDetect: ResizeObserver, 並處理元素消失與重建, 不支援時退回輪詢)監聽容器尺寸:
+         * event為'resize'只聽容器尺寸, 視窗改變而容器不變時不重繪; sync於ResizeObserver回呼內(繪製前)發出使圖表於同一幀重繪; tolerancePixel為0使1px之變化亦發出;
+         * getSize以與echarts相同之方式量測容器(clientWidth扣除padding), 故只改padding而外框不變者亦重繪; getBase為圖表目前尺寸,
+         * 故尺寸一致時(含掛載時與由隱藏轉顯示時)不重繪而不中斷進場動畫, 且與回報次序無關, 同一幀內之尺寸變化(圖剛建立、父組件重繪、捲軸出現)不會遺漏
          */
-        bindResize: function() {
+        genResizeOpt: function(autoresize) {
+            let vo = this
+            let ar = parseAutoresize(autoresize)
+            if (!ar.enabled) {
+                return false
+            }
+            return {
+                event: 'resize',
+                sync: true,
+                tolerancePixel: 0,
+                throttle: ar.throttle,
+                getSize: getContainerSize,
+                getBase: vo.getChartSize,
+            }
+        },
+
+        /**
+         * 取得圖表目前尺寸, 供v-domresize比較, initOptions指定寬高(非'auto')之維度不隨容器變化故回傳null(不比較), 尚無圖表時回傳null(內部使用)
+         */
+        getChartSize: function() {
             let vo = this
 
-            //check
-            if (!vo.autoresize || !vo.chart) {
+            //chart
+            let chart = vo.chart
+            if (!chart) {
+                return null
+            }
+
+            //fixedWidth, fixedHeight
+            let io = vo.initOptions || {}
+            let fixedWidth = io.width != null && io.width !== 'auto'
+            let fixedHeight = io.height != null && io.height !== 'auto'
+
+            return {
+                width: fixedWidth ? null : chart.getWidth(),
+                height: fixedHeight ? null : chart.getHeight(),
+            }
+        },
+
+        /**
+         * 容器尺寸與圖表不一致時(由v-domresize判定)重繪(內部使用)
+         */
+        onDomResize: function() {
+            let vo = this
+
+            //chart
+            let chart = vo.chart
+            if (!chart) {
                 return
             }
 
-            //el
-            let el = vo.$refs['$self']
-            if (!el) {
-                return
-            }
+            //resize
+            chart.resize()
 
-            //wait, onResize
-            let opt = (vo.autoresize === true) ? {} : vo.autoresize
-            let wait = Number.isFinite(opt.throttle) ? opt.throttle : 100
-            let onResize = opt.onResize
+            //flush, echarts之resize不會同步繪製重排後之畫面(待下一幀), 於此立即繪製,
+            //使onResize內可直接讀取新尺寸之畫面元素(例如getZr().storage.getDisplayList()), 並避免ResizeObserver回呼後之該幀顯示舊版面
+            chart.getZr().flush()
 
-            //callback, 重繪並通知外部
-            let callback = () => {
-                if (!vo.chart) {
-                    return
-                }
-                vo.chart.resize()
-                if (typeof onResize === 'function') {
-                    onResize()
-                }
+            //onResize, 於觸發時才讀取, 故更換onResize不需重綁
+            let { onResize } = parseAutoresize(vo.autoresize)
+            if (onResize) {
+                onResize()
             }
-            if (wait > 0) {
-                callback = throttle(callback, wait)
-            }
-
-            //resizeObserver, 掛this成非響應式屬性, 首次observe必觸發一次callback故跳過
-            let bFirst = true
-            vo.resizeObserver = new ResizeObserver(() => {
-                if (bFirst) {
-                    bFirst = false
-                    return
-                }
-                callback()
-            })
-            vo.resizeObserver.observe(el)
 
         },
 
         /**
-         * 解除容器尺寸監聽(內部使用)
-         */
-        clearResize: function() {
-            let vo = this
-
-            //disconnect
-            if (vo.resizeObserver) {
-                vo.resizeObserver.disconnect()
-                vo.resizeObserver = null
-            }
-
-        },
-
-        /**
-         * 銷毀圖表與監聽(內部使用)
+         * 銷毀圖表(內部使用), 容器尺寸監聽由v-domresize隨組件解除
          */
         clear: function() {
             let vo = this
-
-            //clearResize
-            vo.clearResize()
 
             //dispose
             if (vo.chart) {

@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>js/iniEcharts.mjs - Documentation</title>
+    <title>js/parseAutoresize.mjs - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -35,7 +35,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">js/iniEcharts.mjs</h1>
+    <h1 class="page-title">js/parseAutoresize.mjs</h1>
     
 
     
@@ -45,38 +45,50 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>import * as echarts from 'echarts'
-import 'echarts-gl'
+            <pre class="prettyprint source linenums"><code>import isobj from 'wsemi/src/isobj.mjs'
+import isfun from 'wsemi/src/isfun.mjs'
 
 
 /**
- * 初始化echarts, 直接引用echarts與echarts-gl不使用cdn
+ * 解析組件之autoresize設定
  *
- * echarts採全量引入(import 'echarts'), 已自動註冊全部內建圖表(line, bar, pie, scatter, radar, heatmap, tree, treemap, sunburst, parallel, custom等)
- * 與全部內建組件(title, legend, tooltip, toolbox, dataZoom, visualMap, grid, polar, geo等), 故使用時不須另外呼叫echarts.use註冊
- *
- * echarts-gl為3D擴充模組, 匯入時即自行向echarts註冊bar3D, line3D, scatter3D, surface, lines3D等圖表, 以及grid3D, geo3D, globe等座標系,
- * 其package.json已正確宣告sideEffects白名單(index.js與lib/export/all.js等), 故純副作用引入不會被tree-shaking移除
- *
- * 注意: echarts-gl之esm原始碼含無副檔名之深層引用(如'zrender/lib/core/LRU', 'echarts/lib/util/layout'),
- * 而echarts與zrender之package.json exports末端為萬用對應"./*": "./*", 依Node規範解析結果不補副檔名,
- * 故打包工具須具備[深層子路徑補.js重試]之解析能力(webpack內建此行為; rollup需由w-package-tools之rollupFile提供)
- *
- * @returns {Object} 回傳echarts命名空間物件
+ * @param {Boolean|Object} autoresize 輸入autoresize設定，為布林值或物件{throttle,onResize}
+ * @returns {Object} 回傳物件{enabled,throttle,onResize}，enabled為是否啟用布林值，throttle為節流毫秒數(取整，未給或非有限數字時為100，0或負數為0即不節流)，onResize為函數或null
  * @example
  *
- * import iniEcharts from 'w-echarts-vue/src/js/iniEcharts.mjs'
+ * console.log(parseAutoresize(true))
+ * // => { enabled: true, throttle: 100, onResize: null }
  *
- * let echarts = iniEcharts()
- * echarts.registerTheme('myTheme', { ... })
+ * console.log(parseAutoresize({ throttle: 50 }))
+ * // => { enabled: true, throttle: 50, onResize: null }
+ *
+ * console.log(parseAutoresize(false))
+ * // => { enabled: false, throttle: 100, onResize: null }
  *
  */
-function iniEcharts() {
-    return echarts
+function parseAutoresize(autoresize) {
+
+    //enabled
+    let enabled = !!autoresize
+
+    //opt
+    let opt = isobj(autoresize) ? autoresize : {}
+
+    //throttle, 取整並不小於0: 偵測器(wsemi domDetect)之throttle須為正整數, 非整數會被視為無效而不節流
+    let throttle = Number.isFinite(opt.throttle) ? Math.max(0, Math.round(opt.throttle)) : 100
+
+    //onResize
+    let onResize = isfun(opt.onResize) ? opt.onResize : null
+
+    return {
+        enabled,
+        throttle,
+        onResize,
+    }
 }
 
 
-export default iniEcharts
+export default parseAutoresize
 </code></pre>
         </article>
     </section>
