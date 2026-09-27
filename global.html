@@ -29,7 +29,7 @@
 <nav >
     
     
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-WEchartsVue.html">WEchartsVue</a><ul class='methods'><li data-type='method'><a href="module-WEchartsVue.html#bindResize">bindResize</a></li><li data-type='method'><a href="module-WEchartsVue.html#clear">clear</a></li><li data-type='method'><a href="module-WEchartsVue.html#clearResize">clearResize</a></li><li data-type='method'><a href="module-WEchartsVue.html#getChart">getChart</a></li><li data-type='method'><a href="module-WEchartsVue.html#init">init</a></li><li data-type='method'><a href="module-WEchartsVue.html#reinit">reinit</a></li><li data-type='method'><a href="module-WEchartsVue.html#updateLoading">updateLoading</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#iniEcharts">iniEcharts</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-WEchartsVue.html">WEchartsVue</a><ul class='methods'><li data-type='method'><a href="module-WEchartsVue.html#clear">clear</a></li><li data-type='method'><a href="module-WEchartsVue.html#genResizeOpt">genResizeOpt</a></li><li data-type='method'><a href="module-WEchartsVue.html#getChart">getChart</a></li><li data-type='method'><a href="module-WEchartsVue.html#getChartSize">getChartSize</a></li><li data-type='method'><a href="module-WEchartsVue.html#init">init</a></li><li data-type='method'><a href="module-WEchartsVue.html#onDomResize">onDomResize</a></li><li data-type='method'><a href="module-WEchartsVue.html#reinit">reinit</a></li><li data-type='method'><a href="module-WEchartsVue.html#updateLoading">updateLoading</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#getContainerSize">getContainerSize</a></li><li><a href="global.html#iniEcharts">iniEcharts</a></li><li><a href="global.html#isPropUnchanged">isPropUnchanged</a></li><li><a href="global.html#parseAutoresize">parseAutoresize</a></li></ul>
     
 </nav>
 
@@ -124,6 +124,172 @@
 
     
         <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    <h4 class="name" id="getContainerSize"><span class="type-signature"></span>getContainerSize<span class="signature">(el)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>取得echarts容器可用尺寸，量測方式與echarts(zrender)相同，即clientWidth/clientHeight扣除padding(parseInt)，見zrender/lib/canvas/helper.js之getSize，
+供v-domresize之getSize與圖表getWidth()、getHeight()比較，容器寬高為小數時(例如百分比寬度)亦不誤判</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="js_getContainerSize.mjs.html">js/getContainerSize.mjs</a>, <a href="js_getContainerSize.mjs.html#line14">line 14</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>//容器clientWidth為1000、padding左右各20.7px
+console.log(getContainerSize(el))
+// => { width: 960, height: 300 }</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>el</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">HTMLElement</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>輸入容器元素</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>回傳物件{width,height}，單位px，不小於0</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Object</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
 
         
             
@@ -249,6 +415,376 @@ echarts.registerTheme('myTheme', { ... })</code></pre>
 
 
         
+            
+
+    
+
+    <h4 class="name" id="isPropUnchanged"><span class="type-signature"></span>isPropUnchanged<span class="signature">(nv, ov)</span><span class="type-signature"> &rarr; {Boolean}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>判斷prop新舊值是否視為未變更，供watcher略過無實質變化之觸發</p>
+<p>父組件於模板以物件字面值傳入prop時(例如:theme=&quot;{ color: [...] }&quot;)，每次重繪皆產生新物件(參照不同)，故內容相同時視為未變更；
+新舊值為同一物件時，代表由deep watcher偵測到物件內部異動，視為已變更</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="js_isPropUnchanged.mjs.html">js/isPropUnchanged.mjs</a>, <a href="js_isPropUnchanged.mjs.html#line27">line 27</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>console.log(isPropUnchanged({ renderer: 'svg' }, { renderer: 'svg' }))
+// => true
+
+let o = { renderer: 'svg' }
+console.log(isPropUnchanged(o, o))
+// => false
+
+console.log(isPropUnchanged('dark', ''))
+// => false</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>nv</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">*</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>輸入新值</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>ov</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">*</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>輸入舊值</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>回傳是否視為未變更布林值</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Boolean</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="parseAutoresize"><span class="type-signature"></span>parseAutoresize<span class="signature">(autoresize)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>解析組件之autoresize設定</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="js_parseAutoresize.mjs.html">js/parseAutoresize.mjs</a>, <a href="js_parseAutoresize.mjs.html#line22">line 22</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-examples">Example</h5>
+    
+    <pre class="prettyprint"><code>console.log(parseAutoresize(true))
+// => { enabled: true, throttle: 100, onResize: null }
+
+console.log(parseAutoresize({ throttle: 50 }))
+// => { enabled: true, throttle: 50, onResize: null }
+
+console.log(parseAutoresize(false))
+// => { enabled: false, throttle: 100, onResize: null }</code></pre>
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>autoresize</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+|
+
+<span class="param-type">Object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>輸入autoresize設定，為布林值或物件{throttle,onResize}</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>回傳物件{enabled,throttle,onResize}，enabled為是否啟用布林值，throttle為節流毫秒數(取整，未給或非有限數字時為100，0或負數為0即不節流)，onResize為函數或null</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Object</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
     
 
     
@@ -268,7 +804,7 @@ echarts.registerTheme('myTheme', { ... })</code></pre>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.5</a> on Tue Sep 22 2026 22:01:53 GMT+0800 (台北標準時間) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.5</a> on Sun Sep 27 2026 15:16:34 GMT+0800 (台北標準時間) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
