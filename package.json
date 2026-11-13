@@ -1,11 +1,11 @@
 {
   "name": "w-echarts-vue",
-  "version": "1.0.33",
+  "version": "1.0.34",
   "main": "dist/w-echarts-vue.umd.js",
   "dependencies": {
     "echarts": "^6.1.0",
     "echarts-gl": "^2.1.0",
-    "w-component-vue": "^2.5.51",
+    "w-component-vue": "^2.5.53",
     "wsemi": "^1.9.59"
   },
   "devDependencies": {
