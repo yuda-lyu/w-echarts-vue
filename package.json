@@ -1,12 +1,12 @@
 {
   "name": "w-echarts-vue",
-  "version": "1.0.56",
+  "version": "1.0.57",
   "main": "dist/w-echarts-vue.umd.js",
   "dependencies": {
     "echarts": "^6.1.0",
     "echarts-gl": "^2.1.0",
-    "w-component-vue": "^2.5.76",
-    "wsemi": "^1.9.81"
+    "w-component-vue": "^2.5.77",
+    "wsemi": "^1.9.82"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^5.0.8",
